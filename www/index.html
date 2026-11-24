@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0e1116">
+<title>APK Studio</title>
+<style>
+:root{--bg:#0e1116;--card:#171b22;--line:#262c36;--tx:#e8ecf3;--mut:#8b95a7;--ac:#7c5cff;--ok:#2ecc71;--err:#ff5c5c;--warn:#f5b942}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overscroll-behavior-y:none;background:var(--bg);color:var(--tx);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+body{display:flex;flex-direction:column;height:100dvh}
+header{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px}
+header small{color:var(--mut);font-weight:400;font-size:12px}
+main{flex:1;overflow:auto;overscroll-behavior-y:contain;padding:14px 14px 20px}
+.tab{display:none}.tab.on{display:block}
+nav{display:flex;border-top:1px solid var(--line);background:var(--card);padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;background:none;border:0;color:var(--mut);padding:9px 2px 7px;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:1px}
+nav button span{font-size:20px}
+nav button.on{color:var(--ac)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+h3{margin:0 0 8px;font-size:15px}
+label{display:block;color:var(--mut);font-size:12px;margin:10px 0 4px}
+input,select,textarea{width:100%;background:#0b0e13;border:1px solid var(--line);border-radius:10px;color:var(--tx);padding:11px;font:inherit}
+textarea{min-height:120px;resize:vertical}
+button.b{background:var(--ac);color:#fff;border:0;border-radius:10px;padding:12px 14px;font:inherit;font-weight:600;width:100%;margin-top:10px}
+button.b.s{background:#222a36}
+button.b:disabled{opacity:.5}
+.row{display:flex;gap:8px}.row>*{flex:1}
+a.b{display:block;text-align:center;text-decoration:none;background:var(--ok);color:#06210f;border-radius:10px;padding:13px;font-weight:700;margin-top:10px}
+a.b.s{background:#222a36;color:var(--tx);font-weight:600}
+#log{font:12.5px/1.6 ui-monospace,Menlo,monospace;max-height:42vh;overflow:auto}
+#log div{padding:1px 0}.ok{color:var(--ok)}.er{color:var(--err)}.wa{color:var(--warn)}.mu{color:var(--mut)}
+iframe{width:100%;height:62dvh;border:1px solid var(--line);border-radius:12px;background:#fff}
+.proj{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)}
+.proj b{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.proj button{background:#222a36;color:var(--tx);border:0;border-radius:8px;padding:7px 11px}
+ol{padding-left:20px;margin:6px 0}li{margin:6px 0}
+code{background:#0b0e13;padding:1px 6px;border-radius:6px;font-size:13px}
+.hint{color:var(--mut);font-size:12.5px}
+#toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%);background:#222a36;border:1px solid var(--line);padding:10px 16px;border-radius:20px;display:none;z-index:9;max-width:90%}
+.spin{display:inline-block;width:13px;height:13px;border:2px solid var(--mut);border-top-color:var(--ac);border-radius:50%;animation:r 1s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes r{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<header>📱 APK Studio <small>v5 · tavsif → ilova → APK</small><button id="bClearH" style="margin-left:auto;background:#222a36;color:#fff;border:0;border-radius:8px;padding:7px 11px;font:inherit;font-size:13px">🧹 Yangi ish</button></header>
+<main>
+
+<!-- 1. YARATISH -->
+<section class="tab on" id="t-gen">
+  <div class="card">
+    <h3>Qanday ilova kerak?</h3>
+    <label>Ilova nomi</label>
+    <input id="name" placeholder="Masalan: Ilon o'yini">
+    <label>Tavsif (qancha batafsil bo'lsa, shuncha yaxshi)</label>
+    <textarea id="prompt" placeholder="Masalan: Klassik Snake o'yini. Barmoq bilan surish orqali boshqariladi, rekord saqlansin, chiroyli neon dizayn, ovoz effektlari bo'lsin."></textarea>
+    <label>Tur</label>
+    <select id="kind"><option value="app">📱 Dastur / ilova</option><option value="game">🎮 O'yin</option><option value="tool">🧰 Utilita</option><option value="launcher">🏠 Launcher (bosh ekran)</option><option value="anim">🌌 2D/3D animatsiya</option></select>
+    <div class="row">
+      <button class="b" id="bNew">✨ Yangi yaratish</button>
+      <button class="b s" id="bEdit">✏️ O'zgartirish</button>
+    </div>
+    <button class="b" id="bAuto2" style="margin-top:10px">🚀 To'liq avtomatik: yarat → tekshir → APK yasa</button>
+    <div class="hint" style="margin-top:6px">Nom va tavsifni yozing, qolganini AI qiladi: avval o'xshash ilova/o'yinlarni izlab o'rganadi, eng yaxshi yo'nalishni tanlaydi, keyin kodni yozadi, sinaydi, xatosini tuzatadi va GitHub'da APK yig'adi.</div>
+    <div class="hint" style="margin-top:8px">«O'zgartirish» — hozirgi ilovaga yozganingizni qo'shadi (masalan: «o'yinni tezroq qil»).</div>
+    <div id="gstat" class="hint" style="margin-top:8px"></div>
+  </div>
+  <div class="card">
+    <h3>📂 Tayyor HTML'dan APK</h3>
+    <div class="hint">O'zingizdagi HTML faylni tanlang. U <b>o'zgartirilmaydi</b> (faqat fayl yuklash yordamchisi qo'shiladi), to'g'ridan-to'g'ri APK'ga o'raladi. Fayl bilan birga rasm, CSS, JS, ovoz kabi qo'shimcha fayllarni ham birga tanlashingiz mumkin.</div>
+    <input type="file" id="fUp" multiple accept=".html,.htm,.css,.js,.json,.png,.jpg,.jpeg,.gif,.svg,.webp,.ico,.mp3,.ogg,.wav,.m4a,.woff,.woff2,.ttf,.otf" style="display:none">
+    <button class="b" id="bUp">📂 HTML fayl(lar)ni tanlash</button>
+    <div class="hint" style="margin-top:8px">Yuklangach «Ko'rish» da tekshirib, «APK» bo'limida yasaysiz. AI bilan o'zgartirmoqchi bo'lsangiz, yuqoridagi tavsifga yozib «O'zgartirish» bosing.</div>
+  </div>
+  <div class="card"><h3>Saqlangan loyihalar</h3><div id="projs" class="hint">Hozircha yo'q</div></div>
+</section>
+
+<!-- 2. KO'RISH -->
+<section class="tab" id="t-prev">
+  <div id="noprev" class="card hint">Hali ilova yaratilmagan.</div>
+  <div id="prevbox" style="display:none">
+    <iframe id="fr" sandbox="allow-scripts allow-modals allow-forms allow-pointer-lock"></iframe>
+    <div class="row">
+      <button class="b s" id="bReload">🔄 Qayta yuklash</button>
+      <button class="b s" id="bDl">⬇️ HTML</button>
+    </div>
+    <details class="card" id="resbox" style="display:none;margin-top:12px"><summary>📚 AI tadqiqoti va dizayn qarori</summary><div id="restext" class="mu" style="white-space:pre-wrap;font-size:13px;margin-top:8px"></div></details>
+    <details class="card" style="margin-top:12px"><summary>Kodni ko'rish / o'zgartirish</summary>
+      <textarea id="code" style="min-height:240px;font:12px ui-monospace,monospace" spellcheck="false"></textarea>
+      <button class="b s" id="bApply">Kodni qo'llash</button>
+    </details>
+    <button class="b s" id="bFix">🔍 Tekshirish va avto-tuzatish</button>
+    <div id="cstat" class="hint" style="margin:8px 0"></div>
+    <button class="b" id="bToApk">📦 APK yasashga o'tish</button>
+  </div>
+</section>
+
+<!-- 3. APK -->
+<section class="tab" id="t-apk">
+  <div class="card" id="lintbox" style="display:none"></div>
+  <div class="card">
+    <h3>APK yasash</h3>
+    <div class="hint">Ilova GitHub'ga yuklanadi, GitHub uni 3–6 daqiqada APK'ga aylantiradi va havola beradi.</div>
+    <button class="b" id="bBuild">🚀 APK yasash</button>
+  </div>
+  <div class="card"><div id="log" class="mu">Jurnal bo'sh</div></div>
+  <div id="res"></div>
+  <button class="b s" id="bClear" style="margin-bottom:12px">🧹 Tozalash va yangi ish boshlash</button>
+</section>
+
+<!-- 4. YO'RIQNOMA -->
+<section class="tab" id="t-guide">
+  <div class="card">
+    <h3>1-qadam. GitHub akkaunt (bir marta)</h3>
+    <ol>
+      <li><code>github.com</code> ga kirib bepul akkaunt oching.</li>
+      <li>Quyidagi tugma orqali <b>token</b> yarating: <i>Expiration</i> — 90 days, pastga tushib <b>Generate token</b> bosing. <code>repo</code> va <code>workflow</code> allaqachon belgilangan bo'ladi.</li>
+      <li>Chiqqan <code>ghp_...</code> kodni nusxalang (u faqat bir marta ko'rinadi) va ⚙ Sozlamalarga qo'ying.</li>
+    </ol>
+    <a class="b s" target="_blank" rel="noopener" href="https://github.com/settings/tokens/new?scopes=repo,workflow&description=APK-Studio">🔑 Token yaratish sahifasi</a>
+  </div>
+  <div class="card">
+    <h3>2-qadam. AI kaliti (bir marta)</h3>
+    <ol>
+      <li>Bepul Gemini kaliti: <code>aistudio.google.com/apikey</code> → <b>Create API key</b>.</li>
+      <li>Kalitni ⚙ Sozlamalarga qo'ying.</li>
+    </ol>
+    <a class="b s" target="_blank" rel="noopener" href="https://aistudio.google.com/apikey">🤖 Gemini kalit sahifasi</a>
+  </div>
+  <div class="card">
+    <h3>3-qadam. Ishlatish</h3>
+    <ol>
+      <li><b>Yaratish</b> bo'limida ilovani tasvirlang → «Yangi yaratish».</li>
+      <li><b>Ko'rish</b> da sinab ko'ring, kerak bo'lsa «O'zgartirish» bilan tuzating.</li>
+      <li><b>APK</b> bo'limida «APK yasash» bosing.</li>
+      <li>Tayyor bo'lgach yashil tugma chiqadi → bosing → <code>.apk</code> yuklanadi.</li>
+      <li>Faylni oching. Telefon «noma'lum manba» ruxsatini so'rasa, ruxsat bering va o'rnating.</li>
+    </ol>
+  </div>
+  <div class="card">
+    <h3>Orqada nima bo'lyapti? (o'rganish uchun)</h3>
+    <ol>
+      <li><b>Repository</b> — GitHub'dagi loyiha papkasi. Tool uni o'zi ochadi.</li>
+      <li><b>Capacitor</b> — HTML ilovani Android ilovasiga o'raydigan vosita (ichida WebView).</li>
+      <li><b>GitHub Actions</b> — GitHub'ning bepul serveri. <code>.github/workflows/build.yml</code> faylidagi buyruqlar bo'yicha APK'ni yig'adi.</li>
+      <li><b>Release</b> — tayyor APK shu yerga joylanadi, shu yerdan yuklab olinadi.</li>
+    </ol>
+    <div class="hint">Bu <b>debug</b> APK: telefonda o'rnatiladi, lekin Play Market uchun alohida imzo kerak bo'ladi.</div>
+  </div>
+</section>
+
+<!-- 5. SOZLAMALAR -->
+<section class="tab" id="t-set">
+  <div class="card">
+    <h3>📲 Ilova ruxsatlari (avtomatik)</h3>
+    <div class="hint">Fayl yuklash/saqlash, ulashish va telefon xotirasiga kirish har bir APK'ga <b>avtomatik</b> qo'shiladi. Qo'shimcha ruxsatlar:</div>
+    <label style="display:flex;gap:8px;align-items:center;color:var(--tx)"><input id="pCam" type="checkbox" style="width:auto"> 📷 Kamera</label>
+    <label style="display:flex;gap:8px;align-items:center;color:var(--tx)"><input id="pMic" type="checkbox" style="width:auto"> 🎤 Mikrofon</label>
+    <label style="display:flex;gap:8px;align-items:center;color:var(--tx)"><input id="pLoc" type="checkbox" style="width:auto"> 📍 Joylashuv</label>
+    <label style="display:flex;gap:8px;align-items:center;color:var(--tx)"><input id="pNot" type="checkbox" style="width:auto"> 🔔 Bildirishnoma</label>
+  </div>
+  <div class="card">
+    <h3>AI</h3>
+    <label>Provayder</label>
+    <select id="prov"><option value="gemini">Google Gemini</option><option value="openrouter">OpenRouter</option><option value="anthropic">Anthropic (Claude)</option></select>
+    <a class="b s" target="_blank" rel="noopener" href="https://aistudio.google.com/apikey">🔑 Gemini kalit olish (bepul)</a>
+    <a class="b s" target="_blank" rel="noopener" href="https://openrouter.ai/keys">🔑 OpenRouter kalit olish</a>
+    <a class="b s" target="_blank" rel="noopener" href="https://console.anthropic.com/settings/keys">🔑 Anthropic (Claude) kalit olish</a>
+    <label>Gemini API kaliti (AIza...)</label><input id="keyG" type="password" autocomplete="off">
+    <label>OpenRouter API kaliti (sk-or-...)</label><input id="keyO" type="password" autocomplete="off">
+    <label>Anthropic API kaliti (sk-ant-...)</label><input id="keyA" type="password" autocomplete="off">
+    <div class="hint">Ikkalasini ham kiritib qo'ying. Ishlatiladigani yuqoridagi «Provayder»dan tanlanadi.</div>
+    <label>Model</label><input id="model" list="mlist" autocomplete="off"><datalist id="mlist"></datalist>
+    <button class="b s" id="bModels">📋 Mavjud modellar ro'yxatini yuklash</button><div id="mst" class="hint" style="margin-top:6px"></div>
+    <div class="hint">Model nomi eskirsa, provayderning saytidan yangisini ko'rib shu yerga yozing. Bepul: Gemini kaliti yoki OpenRouter'dagi <code>:free</code> bilan tugaydigan modellar.</div>
+    <label style="display:flex;gap:8px;align-items:center;color:var(--tx)"><input id="deep" type="checkbox" style="width:auto"> Aqlli rejim (reja + sinov + avto-tuzatish)</label>
+    <label style="display:flex;gap:8px;align-items:center;color:var(--tx)"><input id="resrch" type="checkbox" style="width:auto"> 🔎 Avval o'xshash ilova/o'yinlarni izlab o'rganish</label>
+    <label style="display:flex;gap:8px;align-items:center;color:var(--tx)"><input id="revw" type="checkbox" style="width:auto"> ✅ Yakuniy sifat nazorati (qo'shimcha AI so'rovi)</label>
+    <div class="hint">Sifatni oshiradi, lekin har ilova uchun 3–5 ta so'rov sarflaydi (bepul limitga e'tibor bering).</div>
+    <label>Zaxira zanjiri (ixtiyoriy)</label>
+    <textarea id="chain" style="min-height:90px;font:12.5px ui-monospace,monospace" spellcheck="false" placeholder="gemini:gemini-3.8-flash&#10;openrouter:google/gemini-3.8-flash&#10;anthropic:claude-sonnet-5-5"></textarea>
+    <div class="hint">Har qatorga <code>provayder:model</code>. Dastur yuqoridan boshlaydi, xato bo'lsa (pul tugasa, limit to'lsa, model o'chsa) keyingisiga o'tadi. Faqat kaliti kiritilgan provayderlar ishlatiladi. Tushunmasangiz, tegmang: dastur o'zi to'ldiradi.</div>
+    <button class="b" id="bAuto">🪄 Zanjirni avto-to'ldirish</button>
+  </div>
+  <div class="card">
+    <h3>GitHub</h3>
+    <a class="b s" target="_blank" rel="noopener" href="https://github.com/settings/tokens/new?scopes=repo,workflow&description=APK-Studio">🔑 GitHub token olish</a>
+    <label>Token (ghp_...)</label><input id="ghToken" type="password" autocomplete="off">
+    <label style="display:flex;gap:8px;align-items:center;color:var(--tx)"><input id="priv" type="checkbox" style="width:auto"> Repository yopiq (private) bo'lsin</label>
+    <div class="hint">Ochiq repoda Actions cheksiz bepul. Yopiqda oyiga 2000 daqiqa.</div>
+    <button class="b s" id="bCheck">Tokenni tekshirish</button>
+    <div id="chk" class="hint" style="margin-top:8px"></div>
+  </div>
+  <div class="card">
+    <h3>🧠 Agentlar (90+ model)</h3>
+    <div class="hint">Kalitlaringizdagi barcha jonli modellar yig'iladi va kodlash kuchi bo'yicha saralanadi. Reja, ikonka, kod, tuzatish — har biriga o'z agenti: arzon/bepul modellar oldinda, kuchlilari faqat kerak bo'lganda.</div>
+    <label style="display:flex;gap:8px;align-items:center;color:var(--tx)"><input id="eco" type="checkbox" style="width:auto"> Tejamkor rejim (tahrirda faqat o'zgargan qismlar, arzon agent oldin)</label>
+    <label style="display:flex;gap:8px;align-items:center;color:var(--tx)"><input id="aiic" type="checkbox" style="width:auto"> Ikonkani AI chizsin</label>
+    <button class="b" id="bPool">🧠 Agent havzasini yig'ish</button><div id="pst" class="hint" style="margin-top:6px"></div>
+  </div>
+  <div class="hint">Kalitlar faqat shu brauzerda saqlanadi va faqat Google/OpenRouter/GitHub'ga yuboriladi. Begona qurilmada ishlatmang.</div>
+</section>
+</main>
+
+<nav id="nav">
+  <button data-t="gen" class="on"><span>✨</span>Yaratish</button>
+  <button data-t="prev"><span>👁</span>Ko'rish</button>
+  <button data-t="apk"><span>📦</span>APK</button>
+  <button data-t="guide"><span>📖</span>Yo'riqnoma</button>
+  <button data-t="set"><span>⚙️</span>Sozlamalar</button>
+</nav>
+<div id="toast"></div>
+
+<script>
+const $=s=>document.querySelector(s);
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+let S=Object.assign({deep:true,economy:true,aiIcon:true,pool:[],kind:'app',provider:'gemini',aiKey:'',model:'gemini-2.5-flash',ghToken:'',priv:false,name:'',html:'',projects:[]},
+  (()=>{try{return JSON.parse(localStorage.getItem('apkstudio')||'{}')}catch(e){return{}}})());
+const save=()=>{try{localStorage.setItem('apkstudio',JSON.stringify(S,(k,v)=>k==='extra'?undefined:v))}catch(e){}};
+const DEF={gemini:'gemini-3.8-flash',openrouter:'google/gemini-3.8-flash',anthropic:'claude-sonnet-5-5'};
+let NOTE='';
+S.keys=Object.assign({gemini:'',openrouter:'',anthropic:''},S.keys||{});
+S.chain=S.chain||'';
+S.perm=Object.assign({cam:true,mic:true,loc:true,notif:true},S.perm||{});
+if(S.research===undefined)S.research=true;if(S.review===undefined)S.review=true;
+if(S.aiKey&&!S.keys.gemini&&!S.keys.openrouter){const k=S.aiKey;S.keys[/^AIza/.test(k)?'gemini':/^sk-or/.test(k)?'openrouter':S.provider]=k}
+if(/gemini-2\.5-flash$/.test(S.model||''))S.model=DEF[S.provider];
+S.aiKey=S.keys[S.provider]||'';save();
+function updKey(){}
+
+function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(toast.h);toast.h=setTimeout(()=>t.style.display='none',3200)}
+function show(id){S.tab=id;save();document.querySelectorAll('.tab').forEach(e=>e.classList.toggle('on',e.id==='t-'+id));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===id));
+  $('main').scrollTop=0; if(id==='prev')renderPrev();if(id==='apk')renderLint();}
+$('#nav').onclick=e=>{const b=e.target.closest('button');if(b)show(b.dataset.t)};
+
+/* ---------- Sozlamalar ---------- */
+function loadSet(){updKey();$('#deep').checked=S.deep;$('#prov').value=S.provider;$('#keyG').value=S.keys.gemini;$('#keyO').value=S.keys.openrouter;$('#keyA').value=S.keys.anthropic;$('#chain').value=S.chain;$('#model').value=S.model;$('#ghToken').value=S.ghToken;$('#priv').checked=S.priv;$('#name').value=S.name;$('#prompt').value=S.prompt||''}
+['prov','keyG','keyO','keyA','chain','model','ghToken','priv','deep'].forEach(id=>$('#'+id).addEventListener('change',()=>{
+  S.deep=$('#deep').checked;
+  const old=S.provider,nw=$('#prov').value;
+  if(id==='prov'&&old!==nw){S.provider=nw;if(S.model===DEF[old]||!$('#model').value.trim())$('#model').value=DEF[nw]}
+  S.keys.gemini=$('#keyG').value.trim();S.keys.openrouter=$('#keyO').value.trim();S.keys.anthropic=$('#keyA').value.trim();S.chain=$('#chain').value;
+  S.aiKey=S.keys[S.provider]||'';S.model=$('#model').value.trim()||DEF[S.provider];updKey();
+  S.ghToken=$('#ghToken').value.trim();S.priv=$('#priv').checked;save()}));
+['keyG','keyO','keyA','chain','ghToken'].forEach(id=>$('#'+id).addEventListener('input',()=>$('#'+id).dispatchEvent(new Event('change'))));
+$('#bCheck').onclick=async()=>{
+  S.ghToken=$('#ghToken').value.trim();save();$('#chk').textContent='Tekshirilmoqda...';
+  try{const u=await gh('/user');$('#chk').innerHTML='<span class="ok">✅ Ulandi: '+esc(u.login)+'</span>'}
+  catch(e){$('#chk').innerHTML='<span class="er">❌ '+esc(e.message)+'</span>'}};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---------- AI ---------- */
+const SYSTEM=`Sen dunyo darajasidagi senior mobil-ilova va o'yin dasturchisisan. Vazifa: foydalanuvchi tavsifi bo'yicha BITTA to'liq, mustaqil HTML fayl yoz (HTML+CSS+JS bitta faylda). U Android WebView ichida APK sifatida ishlaydi.
+Qoidalar:
+- <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"> bo'lsin.
+- Hech qanday tashqi CDN, kutubxona, rasm yoki shrift havolasi ishlatma: hammasi oflayn ishlashi kerak. Grafika uchun canvas/SVG/CSS, ovoz uchun WebAudio API.
+- Faqat sensorli boshqaruv (touch/pointer) va mos ravishda klaviatura. Tugmalar kamida 44px. Ekran o'lchamiga to'liq moslashuvchan (100dvh, safe-area), portret va landshaft.
+- Matnlar o'zbek tilida (lotin), agar foydalanuvchi boshqasini so'ramasa.
+- O'yinlarda: requestAnimationFrame, delta-time, start/pauza/qayta boshlash ekranlari, ochko va rekord (localStorage try/catch ichida), silliq animatsiya, chiroyli zamonaviy dizayn.
+- Oddiy ilovalarda: toza zamonaviy UI, ma'lumotlar localStorage'da saqlansin.
+- Brauzer alert/confirm/prompt ishlatma, o'z modal oynangni yasa. Matn tanlash va kontekst menyusini o'chir (user-select:none, touch-action).
+- KO'P O'YINCHILI REJIM: agar tavsifda "Wi-Fi", "tarmoq", "onlayn", "2 kishilik", "birga o'ynash" yoki shunga o'xshash so'z bo'lsa, o'yinni WebRTC (RTCPeerConnection + RTCDataChannel) bilan yoz, tashqi kutubxona va serversiz. Ulanish qo'lda: boshlang'ich ekranda «Xost bo'lish» va «Qo'shilish» tugmalari. Xost offer yaratadi, ICE yig'ilishi tugashini (icegatheringstate complete yoki 4 soniya timeout) kutadi va localDescription'ni JSON→base64 matn qilib nusxalash tugmasi bilan ko'rsatadi. Mehmon shu matnni joylab answer yaratadi va uni nusxalab ko'rsatadi; xost answer'ni joylaydi. Konfiguratsiya: iceServers:[{urls:'stun:stun.l.google.com:19302'}]. Kanal ochilgach o'yin boshlanadi: xost holatni hisoblaydi, ~30 Hz JSON yuboradi, mehmon kiritishlarini yuboradi. Uzilish (connectionstatechange failed/disconnected) uchun xabar va «Qayta ulanish» ekrani bo'lsin. Barcha ulanish matnlari o'zbek tilida, ko'rsatmalar qisqa va tushunarli bo'lsin.
+- Kod xatosiz, to'liq va ishlaydigan bo'lsin; qisqartirma, "..." yoki TODO qoldirma.
+JAVOB FORMATI: faqat <!DOCTYPE html> dan </html> gacha bo'lgan kod. Hech qanday izoh va markdown yo'q.`;
+
+const PLAN=`Sen tajribali mahsulot arxitektorisan. Foydalanuvchining qisqa tavsifini mobil ilova/o'yin uchun batafsil texnik rejaga aylantir: ekranlar va navigatsiya, sensorli boshqaruv, qoidalar va mexanikalar, ma'lumotlar tuzilmasi, dizayn uslubi (ranglar, animatsiya), murakkab joylarni qanday hal qilish, chekka holatlar va ehtimoliy xatolar. 250–450 so'z. Faqat reja, kod yozma.`;
+async function callOne(p,m,user,sys,search){
+  const withSrc=(t,a)=>{a=(a||[]).filter(Boolean);return search&&a.length?t+'\n\nMANBALAR:\n'+[...new Set(a)].slice(0,8).join('\n'):t};
+  const k=S.keys[p];let r,j;
+  if(!k)throw new Error(p+' kaliti kiritilmagan');
+  if(p==='anthropic'){
+    r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':k,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify(Object.assign({model:m,max_tokens:16000,system:sys,messages:[{role:'user',content:user}]},search?{tools:[{type:'web_search_20250305',name:'web_search',max_uses:5}]}:{}))});
+    j=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error((j.error&&j.error.message)||('Anthropic xato '+r.status));
+    const t=(j.content||[]).map(c=>c.text||'').join('');
+    const srcA=(j.content||[]).filter(c=>c.type==='web_search_tool_result'&&Array.isArray(c.content)).reduce((a,c)=>a.concat(c.content.map(x=>(x.title||'')+' — '+(x.url||''))),[]);
+    if(!t)throw new Error('AI bo\'sh javob qaytardi');
+    return withSrc(t,srcA);
+  }
+  if(p==='gemini'){
+    r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(m)+':generateContent',{method:'POST',
+      headers:{'Content-Type':'application/json','x-goog-api-key':k},
+      body:JSON.stringify({systemInstruction:{parts:[{text:sys}]},contents:[{role:'user',parts:[{text:user}]}],generationConfig:{maxOutputTokens:32768,temperature:0.7},...(search?{tools:[{google_search:{}}]}:{})})});
+    j=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error((j.error&&j.error.message)||('Gemini xato '+r.status));
+    const c=j.candidates&&j.candidates[0];
+    const t=c&&c.content&&c.content.parts?c.content.parts.map(p=>p.text||'').join(''):'';
+    if(!t)throw new Error('AI bo\'sh javob qaytardi'+(c&&c.finishReason?' ('+c.finishReason+')':''));
+    return withSrc(t,((c.groundingMetadata&&c.groundingMetadata.groundingChunks)||[]).map(x=>x.web?(x.web.title||'')+' — '+(x.web.uri||''):''));
+  }
+  let mt=16000;
+  for(let a=0;;a++){
+  r=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+k},
+    body:JSON.stringify(Object.assign({model:m,max_tokens:mt,temperature:0.7,messages:[{role:'system',content:sys},{role:'user',content:user}]},search?{plugins:[{id:'web',max_results:5}]}:{}))});
+  j=await r.json().catch(()=>({}));
+  const msg=(j.error&&j.error.message)||'';const am=msg.match(/afford (\d+)/);
+  if(!r.ok&&am&&a<1&&+am[1]>1500){mt=Math.max(1000,+am[1]-300);continue}
+  if(!r.ok)throw new Error(msg||('OpenRouter xato '+r.status));
+  break;}
+  const t=j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content;
+  if(!t)throw new Error('AI bo\'sh javob qaytardi');
+  return withSrc(t,(j.choices[0].message.annotations||[]).map(x=>x.url_citation?(x.url_citation.title||'')+' — '+(x.url_citation.url||''):''));
+}
+function extractHtml(t){
+  const m=t.match(/```(?:html)?\s*([\s\S]*?)```/i);
+  if(m&&/<html|<!doctype/i.test(m[1]))t=m[1];
+  else{const i=t.search(/<!doctype|<html/i);if(i>0)t=t.slice(i);t=t.replace(/```\s*$/,'')}
+  return t.trim();
+}
+function chainList(){
+  const out=[];(S.chain||'').split('\n').forEach(l=>{l=l.trim();const i=l.indexOf(':');if(i<1)return;
+    const p=l.slice(0,i).trim().toLowerCase(),m=l.slice(i+1).trim();
+    if(m&&DEF[p]&&S.keys[p])out.push({p,m})});
+  if(out.length)return out;
+  const p=S.keys[S.provider]?S.provider:(Object.keys(S.keys).find(x=>S.keys[x])||S.provider);
+  return [{p,m:p===S.provider?S.model:DEF[p]}];
+}
+async function autoChain(silent){
+  const out=[],st=$('#mst');
+  if(!silent)st.textContent='Modellar qidirilmoqda...';
+  const H={'x-api-key':S.keys.anthropic,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'};
+  if(S.keys.gemini){try{
+    const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=200',{headers:{'x-goog-api-key':S.keys.gemini}});
+    const j=await r.json();
+    if(r.ok){
+      const ids=(j.models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes('generateContent')).map(m=>m.name.replace('models/','')).filter(n=>/^gemini-[\d.]+-(flash|flash-lite|pro)$/.test(n));
+      const ver=n=>parseFloat(n.match(/^gemini-([\d.]+)/)[1]);
+      const pick=t=>ids.filter(n=>n.endsWith('-'+t)).sort((a,b)=>ver(b)-ver(a));
+      const fl=pick('flash'),ll=pick('flash-lite'),pr=pick('pro');
+      [fl[0],fl[1],ll[0],pr[0]].filter(Boolean).forEach(n=>out.push('gemini:'+n));
+    }}catch(e){}}
+  if(S.keys.openrouter){try{
+    const r=await fetch('https://openrouter.ai/api/v1/models');const j=await r.json();
+    const fr=(j.data||[]).filter(m=>/:free$/.test(m.id)&&(m.context_length||0)>=32000).sort((a,b)=>(b.created||0)-(a.created||0));
+    const pf=fr.filter(m=>/coder|deepseek|qwen|gemini|glm|kimi|gpt-oss|llama|mistral/i.test(m.id));
+    (pf.length?pf:fr).slice(0,4).forEach(m=>out.push('openrouter:'+m.id));
+  }catch(e){}}
+  if(S.keys.anthropic){try{
+    const r=await fetch('https://api.anthropic.com/v1/models?limit=100',{headers:H});const j=await r.json();
+    if(r.ok){const ids=(j.data||[]).map(m=>m.id);const f=t=>ids.find(i=>i.includes(t));
+      [f('sonnet'),f('haiku')].filter(Boolean).forEach(i=>out.push('anthropic:'+i));}
+  }catch(e){}}
+  if(out.length){S.chain=[...new Set(out)].join('\n');$('#chain').value=S.chain;save();
+    if(!silent)st.innerHTML='<span class="ok">✅ Zanjir tuzildi: '+out.length+' ta model.</span> Bepullari oldinda, pullik Claude oxirida.';}
+  else if(!silent)st.innerHTML='<span class="er">❌ Avval kamida bitta API kalitni kiriting.</span>';
+  return out.length}
+
+const RESEARCH=`Sen mahsulot tadqiqotchisisan. Foydalanuvchi qurmoqchi bo'lgan ilova yoki o'yin tavsifi beriladi.
+Vazifang:
+1) Agar qidiruv vositasi bo'lsa, undan foydalanib internetda 3-5 ta eng o'xshash mashhur ilova/o'yin/veb-demoni top.
+2) Har biri uchun: nomi, asosiy g'oya, interfeys tuzilishi (ekranlar, boshqaruv, HUD), nima yaxshi, nima yomon.
+3) Foydalanuvchilar odatda nimadan shikoyat qiladi va nimani yetishmayapti deydi.
+4) Bitta HTML fayl (canvas/WebGL/CSS, Android WebView) imkoniyatida nima qilish mumkin, nima mumkin emas.
+Qoidalar: mavjud bo'lmagan ilovani to'qima, ishonching komil bo'lmasa "aniq emas" de. Birinchi qatorga "MANBA: internet" yoki "MANBA: model bilimi" deb yoz. O'zbek tilida, 350-600 so'z, ro'yxat ko'rinishida. Kod yozma.`;
+const DECIDE=`Sen bosh dizaynersan. Tadqiqot natijasi va foydalanuvchi tavsifiga ko'ra BITTA eng yaxshi yo'nalishni tanla va qaror qil. Yoz:
+- Asosiy g'oya va nima uchun aynan shu (o'xshashlardan ustunligi).
+- Ekranlar va interfeys maketi (tepadan pastgacha), sensorli boshqaruv.
+- Mexanika yoki effektlar, vizual uslub (ranglar, harakat), ovoz.
+- Ma'lumot saqlash va ishlash tezligi qoidalari.
+- Oxirida "MUKAMMALLIK RO'YXATI": tekshirib bo'ladigan 10 ta aniq talab.
+O'zbek tilida, 300-500 so'z. Kod yozma.`;
+async function researchAI(user){
+  const list=roleList('plan').slice(0,4);
+  for(const {p,m} of list){
+    try{const t=await callOne(p,m,user,RESEARCH,true);return{text:t,web:/\nMANBALAR:/.test(t)}}catch(e){}
+  }
+  const t=await callAI(user,RESEARCH,'plan');
+  return{text:t,web:false};
+}
+async function callAI(user,sys,role){
+  sys=sys||SYSTEM+KIT;const list=(role?roleList(role):chainList()).slice(0,6);let last;
+  for(let i=0;i<list.length;i++){const {p,m}=list[i];
+    try{const t=await callOne(p,m,user,sys);if(i>0)NOTE=' (zaxira: '+p+')';return t}
+    catch(e){last=e;NOTE=' ⚠️ '+p+':'+m+' ishlamadi'+(i<list.length-1?', keyingisiga o\'tilmoqda':'')}}
+  throw last;
+}
+const KN={app:'',game:'Tur: o\'yin.',tool:'Tur: foydali utilita dastur.',launcher:'Tur: Android launcher (bosh ekran): soat, vidjetlar, ilovalar to\'ri, qidiruv, jonli fon animatsiya.',anim:'Tur: 2D/3D animatsiya va vizual tajriba. Texnik talablar: kutubxonasiz sof canvas 2D yoki WebGL (3D uchun o\'z perspektiva/matritsa kodi yoki shaderlar), requestAnimationFrame va delta-time, devicePixelRatio ni 2 bilan cheklash, resize va orientation ga moslashish, ilova fonga o\'tganda (visibilitychange) animatsiyani to\'xtatish, barmoq bilan o\'zaro ta\'sir (surish, bosish, ikki barmoq bilan yaqinlashtirish), sozlamalar paneli (tezlik, ranglar, rejim), 60 kadr/s ga intilish, zarrachalar sonini qurilma kuchiga qarab moslash, ovoz WebAudio bilan (ixtiyoriy, o\'chirish tugmasi bor).'};
+const KIT=`
+SIFAT: kodni bo'limlarga ajrat (state, update, render, input, audio), xatolardan himoyala (try/catch), 60fps, obyektlarni qayta ishlat (GC kam), resize/burilishni qayta hisobla, visibilitychange'da pauza, devicePixelRatio'ni hisobga ol. Dizayn: bitta palitra (CSS o'zgaruvchilar), gradient, soya, easing, mikro-animatsiya, particle effektlari, parallax fon.
+3D kerak bo'lsa tashqi kutubxona o'rniga SHU yadroni nusxala va kengaytir:
+const M3={cube:(s=1)=>({v:[[-1,-1,-1],[1,-1,-1],[1,1,-1],[-1,1,-1],[-1,-1,1],[1,-1,1],[1,1,1],[-1,1,1]].map(a=>a.map(x=>x*s)),f:[[0,1,2,3],[5,4,7,6],[4,0,3,7],[1,5,6,2],[3,2,6,7],[4,5,1,0]]}),
+draw(ctx,m,{x=0,y=0,z=0,rx=0,ry=0,rz=0,cam=6,fov=500,w,h,col=[120,92,255]}){const P=m.v.map(([a,b,c])=>{let t=a*Math.cos(ry)+c*Math.sin(ry);c=-a*Math.sin(ry)+c*Math.cos(ry);a=t;t=b*Math.cos(rx)-c*Math.sin(rx);c=b*Math.sin(rx)+c*Math.cos(rx);b=t;t=a*Math.cos(rz)-b*Math.sin(rz);b=a*Math.sin(rz)+b*Math.cos(rz);a=t+x;b+=y;c+=z+cam;const k=fov/c;return[w/2+a*k,h/2-b*k,c,a,b]});
+m.f.map(f=>({f,z:f.reduce((s,i)=>s+P[i][2],0)/f.length})).sort((p,q)=>q.z-p.z).forEach(({f})=>{const[a,b,c]=f.map(i=>P[i]);const n=Math.abs((b[3]-a[3])*(c[4]-a[4])-(b[4]-a[4])*(c[3]-a[3]));const l=.45+.55*n/(n+4);ctx.fillStyle='rgb('+col.map(v=>v*l|0)+')';ctx.beginPath();f.forEach((i,j)=>j?ctx.lineTo(P[i][0],P[i][1]):ctx.moveTo(P[i][0],P[i][1]));ctx.closePath();ctx.fill()})}};
+Murakkab 3D (sfera, relyef, tunnel) uchun xom WebGL (o'z shader'lari) yoki CSS 3D transform ishlat.
+OVOZ: WebAudio bilan sfx(freq,dur,type,vol) va oddiy sintez musiqa sikli yoz; AudioContext'ni birinchi tegishda resume() qil.
+RASM: tashqi fayl yo'q; sprite, fon, ikonkalarni canvas/SVG/gradient bilan kod orqali chiz.`;
+const SCORE=[[/claude.*(opus|fable|mythos)/,100],[/claude.*sonnet/,95],[/gemini.*pro/,92],[/coder|codestral|devstral/,90],[/deepseek/,86],[/qwen3|qwen-3/,84],[/glm|kimi|minimax/,82],[/gpt-oss|gpt-5|o3|o4/,80],[/gemini.*flash/,74],[/mistral|llama|grok|nemotron/,60]];
+const BAD=/embed|image|audio|tts|whisper|guard|moderation|vision|[-:][1-8]b\b|lite-preview/i;
+async function buildPool(){
+  const out=[],st=$('#pst');if(st)st.textContent='Modellar qidirilmoqda...';
+  const add=(p,m,free,c)=>{if(BAD.test(m))return;let s=0;for(const [r,v] of SCORE)if(r.test(m.toLowerCase())){s=v;break}out.push({p,m,free:!!free,s:(s||40)+(c>=100000?3:0)})};
+  const J=async(u,hd)=>{try{return await (await fetch(u,{headers:hd})).json()}catch(e){return{}}};
+  if(S.keys.openrouter){const j=await J('https://openrouter.ai/api/v1/models');(j.data||[]).forEach(x=>{const q=x.pricing||{};add('openrouter',x.id,/:free$/.test(x.id)||(+q.prompt===0&&+q.completion===0),x.context_length)})}
+  if(S.keys.gemini){const j=await J('https://generativelanguage.googleapis.com/v1beta/models?pageSize=200',{'x-goog-api-key':S.keys.gemini});(j.models||[]).filter(x=>(x.supportedGenerationMethods||[]).includes('generateContent')&&/gemini/.test(x.name)).forEach(x=>add('gemini',x.name.replace('models/',''),/flash|lite/.test(x.name),x.inputTokenLimit))}
+  if(S.keys.anthropic){const j=await J('https://api.anthropic.com/v1/models?limit=100',{'x-api-key':S.keys.anthropic,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'});(j.data||[]).forEach(x=>add('anthropic',x.id,false,200000))}
+  out.sort((a,b)=>b.s-a.s);S.pool=out.slice(0,120);save();
+  if(st)st.innerHTML=S.pool.length?'<span class="ok">✅ '+S.pool.length+' ta agent-model tayyor</span> (bepul: '+S.pool.filter(x=>x.free).length+', kuchli: '+S.pool.filter(x=>x.s>=80).length+')':'<span class="er">❌ Avval kamida bitta API kalit kiriting</span>';
+  return S.pool.length}
+function roleList(r){
+  const P=(S.pool||[]).filter(x=>S.keys[x.p]);if(!P.length)return chainList();
+  const ch=P.filter(x=>x.free).sort((a,b)=>b.s-a.s),pd=P.filter(x=>!x.free).sort((a,b)=>b.s-a.s);
+  if(r==='plan'||r==='icon')return ch.filter(x=>x.s>=60).concat(pd.slice().reverse(),ch);
+  if(r==='code')return S.economy?ch.filter(x=>x.s>=80).concat(pd,ch):pd.concat(ch);
+  if(r==='fix')return ch.concat(pd);
+  return pd.concat(ch)}
+function applyPatch(h,t){let n=0,ok=true;t.replace(/<<<<<<< SEARCH\n([\s\S]*?)\n=======\n([\s\S]*?)\n>>>>>>> REPLACE/g,(_,a,b)=>{if(h.includes(a)){h=h.replace(a,()=>b);n++}else ok=false;return ''});return n&&ok?h:null}
+const ICONP='Ilova ikonkasi uchun FAQAT bitta <svg viewBox="0 0 512 512"> yoz: shaffof fon, markazdagi 300x300 maydonga sig\'adigan, 2-3 rangli, silliq zamonaviy glyph (fonsiz, matnsiz). 1500 belgidan oshmasin. Boshqa hech narsa yozma.';
+const svgImg=s=>new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(s)});
+async function makeIcons(name,desc){
+  let h=0;for(const c of name)h=(h*31+c.charCodeAt(0))%360;
+  let g=S.glyphFor===name?S.glyph:'';
+  if(!g&&S.aiIcon){try{const t=await callAI('Ilova: '+name+'. '+desc,ICONP,'icon');const m=t.match(/<svg[\s\S]*<\/svg>/i);if(m&&!/<script|onload|href=/i.test(m[0])){await svgImg(m[0]);g=m[0];S.glyph=g;S.glyphFor=name;save()}}catch(e){}}
+  const mk=async(bg,fg,sc)=>{const c=document.createElement('canvas');c.width=c.height=1024;const x=c.getContext('2d');
+    if(bg){const l=x.createLinearGradient(0,0,1024,1024);l.addColorStop(0,'hsl('+h+',80%,58%)');l.addColorStop(1,'hsl('+((h+50)%360)+',75%,30%)');x.fillStyle=l;x.fillRect(0,0,1024,1024)}
+    if(fg){const s=1024*sc,o=(1024-s)/2;if(g)x.drawImage(await svgImg(g),o,o,s,s);else{x.fillStyle='#fff';x.font='700 '+(s*.8|0)+'px system-ui,sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText((name.trim()[0]||'A').toUpperCase(),512,540)}}
+    return c.toDataURL('image/png').split(',')[1]};
+  return{'icon-only.png':await mk(1,1,.72),'icon-foreground.png':await mk(0,1,.58),'icon-background.png':await mk(1,0,1)}}
+let busy=false;
+async function gen(mode,opt){
+  if(busy)return;
+  const p0=$('#prompt').value.trim();const p=p0?p0+' '+(KN[$('#kind').value]||''):'';
+  if(!p0)return toast('Avval tavsif yozing');
+  if(!Object.values(S.keys).some(Boolean)){toast('Avval AI kalitni kiriting');return show('set')}
+  if(mode==='edit'&&!S.html)return toast('Hali o\'zgartiriladigan ilova yo\'q');
+  S.name=$('#name').value.trim()||S.name||'Mening ilovam';
+  NOTE='';busy=true;$('#bNew').disabled=$('#bEdit').disabled=true;
+  let phase='AI kod yozmoqda',_ok=false;
+  const t0=Date.now();const iv=setInterval(()=>{$('#gstat').innerHTML='<span class="spin"></span>'+phase+'... '+Math.round((Date.now()-t0)/1000)+' s'+NOTE},500);
+  try{
+    if(!S.pool.length){phase='Agent havzasi yig\'ilmoqda';await buildPool();if(!S.pool.length&&!S.chain.trim())await autoChain(true)}
+    let plan='',spec='',research='',resWeb=false;
+    if(S.research&&mode==='new'){
+      try{
+        phase='Izlash: o\'xshash ilova va o\'yinlar o\'rganilmoqda';
+        const rr=await researchAI('Ilova nomi: '+S.name+'\nTavsif: '+p);research=rr.text;resWeb=rr.web;
+        phase='Eng yaxshi yo\'nalish tanlanmoqda';
+        spec=await callAI('Ilova nomi: '+S.name+'\nTavsif: '+p+'\n\nTADQIQOT NATIJASI:\n'+research,DECIDE,'plan');
+      }catch(e){research='';spec='';NOTE=' ⚠️ Tadqiqot ishlamadi, oddiy rejimda davom etilmoqda'}
+      S.lastRes=spec?{research:research.slice(0,6000),spec:spec.slice(0,5000),web:resWeb,t:Date.now()}:null;
+    }
+    if(S.deep&&mode==='new'){phase='1/3 Reja tuzilmoqda';plan=await callAI('Ilova nomi: '+S.name+'\nTavsif: '+p+(spec?'\n\nTanlangan dizayn qarori (shunga to\'liq amal qil):\n'+spec:''),PLAN,'plan')}
+    if(spec)plan=plan?('DIZAYN QARORI:\n'+spec+'\n\nTEXNIK REJA:\n'+plan):spec;
+    phase=S.deep?'2/3 Kod yozilmoqda':'AI kod yozmoqda';
+    const user=mode==='edit'
+      ?'Mavjud ilova kodi:\n'+S.html+'\n\nO\'zgartirish talabi: '+p+'\n\nTo\'liq yangilangan kodni qaytar (faqat HTML).'
+      :'Ilova nomi: '+S.name+'\nTavsif: '+p+(plan?'\n\nBatafsil reja (shunga amal qil):\n'+plan:'');
+    let out;
+    if(mode==='edit'&&S.economy&&S.html.length>5000){phase='Tejamkor tahrir (faqat o\'zgargan qismlar)';
+      out=applyPatch(S.html,await callAI('Mavjud kod:\n'+S.html+'\n\nO\'zgartirish: '+p+'\n\nFAQAT SEARCH/REPLACE bloklarini qaytar:\n<<<<<<< SEARCH\n(kodning aynan mavjud qismi)\n=======\n(yangisi)\n>>>>>>> REPLACE',SYSTEM+KIT+'\nBU SAFAR javob formati: faqat SEARCH/REPLACE bloklari, to\'liq fayl emas.','code'))}
+    if(!out)out=extractHtml(await callAI(user,null,'code'));
+    if(!/<html|<!doctype/i.test(out))throw new Error('AI to\'g\'ri HTML qaytarmadi. Qayta urinib ko\'ring.');
+    let fixed=0,left='',ok=false,polished=false;
+    if(S.deep){
+      for(let i=0;i<2;i++){
+        phase='3/3 Sinov va tekshiruv ('+(i+1)+'/2)';
+        const errs=await testHtml(out);
+        if(!errs.length){left='';ok=true;break}
+        left=errs.join('\n');phase='3/3 Xatolar tuzatilmoqda ('+(i+1)+'/2)';
+        const fx=extractHtml(await callAI('Quyidagi kod ishga tushganda xatolar chiqdi.\n\nKOD:\n'+out+'\n\nXATOLAR:\n'+left+'\n\nBarcha xatolarni tuzat. To\'liq kodni qaytar (faqat HTML).',null,i?'strong':'fix'));
+        if(/<html|<!doctype/i.test(fx)){out=fx;fixed++;left=''}else break;
+      }
+      if(!left&&!ok){const e2=await testHtml(out);left=e2.join('\n')}
+    }
+    if(S.review&&mode==='new'&&!left&&spec){
+      phase='Yakuniy sifat nazorati';
+      try{
+        const imp=extractHtml(await callAI('Mana tayyor ilova kodi va uning DIZAYN QARORI.\n\nQAROR:\n'+spec+'\n\nKOD:\n'+out+'\n\nVazifa: kodni qaror va mukammallik ro\'yxatiga qarshi tekshir. Yetishmayotgan yoki sust joylarni (interfeys, boshqaruv qulayligi, animatsiya silliqligi, chekka holatlar, ishlash tezligi) yaxshila. Ishlaydigan qismlarni BUZMA. To\'liq yangilangan kodni qaytar (faqat HTML).',null,'strong'));
+        if(/<html|<!doctype/i.test(imp)&&/<\/html>\s*$/i.test(imp)){const e3=await testHtml(imp);if(!e3.length){out=imp;polished=true}}
+      }catch(e){}
+    }
+    S.html=out;
+    const id=S.cur||(S.cur=Date.now());
+    if(mode==='new'){S.cur=Date.now()}
+    const ex=S.projects.find(x=>x.id===S.cur);
+    if(ex){ex.html=out;ex.name=S.name;ex.t=Date.now()}else S.projects.unshift({id:S.cur,name:S.name,html:out,t:Date.now()});
+    S.projects=S.projects.slice(0,15);save();renderProjs();
+    $('#gstat').innerHTML=(left?'<span class="wa">⚠️ Tayyor, lekin sinovda xato qoldi — Ko\'rish bo\'limida tekshiring yoki «O\'zgartirish» bilan tuzating.</span>':'<span class="ok">✅ Tayyor'+(fixed?' ('+fixed+' marta avto-tuzatildi)':'')+(polished?' · sifat nazoratidan o\'tdi':'')+(spec?' · '+(resWeb?'internet tadqiqoti':'AI bilimi asosidagi tadqiqot')+' hisobga olindi':'')+'</span>')+(/<\/html>\s*$/i.test(out)?'':' <span class="wa">Kod uzilgan bo\'lishi mumkin.</span>');
+    _ok=true;if(!(opt&&opt.stay))show('prev');
+  }catch(e){$('#gstat').innerHTML='<span class="er">❌ '+esc(e.message)+'</span>'+(/no longer|not found|not supported|does not exist|invalid model/i.test(e.message)?'<div class="wa">Model eskirgan. ⚙ Sozlamalar → «Mavjud modellar ro\'yxatini yuklash» bosib, yangisini tanlang.</div>':'')+(/credits|afford/i.test(e.message)?'<div class="wa">OpenRouter hisobida mablag\' kam. Bepul yo\'l: ⚙ Sozlamalarda provayderni Gemini qiling yoki OpenRouter modelini «free» bilan tugaydiganiga almashtiring.</div>':'')}
+  finally{clearInterval(iv);busy=false;$('#bNew').disabled=$('#bEdit').disabled=false}
+  return _ok;
+}
+$('#bNew').onclick=()=>gen('new');$('#bEdit').onclick=()=>gen('edit');
+
+function renderProjs(){
+  const b=$('#projs');if(!S.projects.length){b.textContent='Hozircha yo\'q';return}
+  b.innerHTML='';S.projects.forEach(p=>{const d=document.createElement('div');d.className='proj';
+    d.innerHTML='<b>'+esc(p.name)+'</b><button data-o="'+p.id+'">Ochish</button><button data-d="'+p.id+'">🗑</button>';b.appendChild(d)});
+}
+$('#projs').onclick=e=>{
+  const o=e.target.dataset.o,d=e.target.dataset.d;
+  if(o){const p=S.projects.find(x=>x.id==o);S.extra=[];S.lastRes=null;S.html=p.html;S.name=p.name;S.cur=p.id;$('#name').value=p.name;save();show('prev')}
+  if(d){S.projects=S.projects.filter(x=>x.id!=d);if(S.cur==d){S.cur=null}save();renderProjs()}};
+
+/* ---------- Ko'rish ---------- */
+const ERRSHIM='<script>(function(){function s(m){try{parent.postMessage({__apk:1,m:String(m).slice(0,300)},"*")}catch(e){}}window.addEventListener("error",function(e){s((e.message||"xato")+(e.lineno?" (qator "+e.lineno+")":""))});window.addEventListener("unhandledrejection",function(e){s("Promise xato: "+(e.reason&&e.reason.message||e.reason))});var ce=console.error;console.error=function(){s("console.error: "+Array.prototype.join.call(arguments," "));ce.apply(console,arguments)}})()<\/script>';
+function inject(html,sc){const m=html.match(/<head[^>]*>/i);if(m)return html.replace(m[0],m[0]+sc);const d=html.match(/<!doctype[^>]*>/i);return d?html.replace(d[0],d[0]+sc):sc+html}
+function testHtml(html){return new Promise(res=>{
+  const errs=[];const f=document.createElement('iframe');f.setAttribute('sandbox','allow-scripts allow-modals allow-forms');
+  f.style.cssText='position:fixed;left:-9999px;top:0;width:390px;height:780px;border:0';
+  const h=e=>{if(e.source===f.contentWindow&&e.data&&e.data.__apk&&errs.length<6&&!errs.includes(e.data.m))errs.push(e.data.m)};
+  addEventListener('message',h);f.srcdoc=inject(inject(html,SHIM),ERRSHIM);document.body.appendChild(f);
+  setTimeout(()=>{removeEventListener('message',h);f.remove();res(errs)},4000)})}
+const SHIM='<script>try{localStorage.getItem("x")}catch(e){try{var m={};Object.defineProperty(window,"localStorage",{value:{getItem:function(k){return k in m?m[k]:null},setItem:function(k,v){m[k]=String(v)},removeItem:function(k){delete m[k]},clear:function(){m={}}}})}catch(_){}}<\/script>';
+function renderPrev(){
+  const has=!!S.html;$('#noprev').style.display=has?'none':'block';$('#prevbox').style.display=has?'block':'none';
+  const rb=$('#resbox');if(rb){if(has&&S.lastRes){rb.style.display='block';$('#restext').textContent=(S.lastRes.web?'🌐 Internet qidiruvi ishlatildi\n\n':'📚 Internet manbasi olinmadi, AI bilimiga tayandi\n\n')+'── TADQIQOT ──\n'+S.lastRes.research+'\n\n── DIZAYN QARORI ──\n'+S.lastRes.spec}else rb.style.display='none'}
+  if(!has)return;$('#fr').srcdoc=inject(S.html,SHIM);$('#code').value=S.html;
+}
+$('#bReload').onclick=renderPrev;
+$('#bApply').onclick=()=>{S.html=$('#code').value;const p=S.projects.find(x=>x.id===S.cur);if(p)p.html=S.html;save();renderPrev();toast('Qo\'llandi')};
+$('#bDl').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([S.html],{type:'text/html'}));a.download=slug(S.name)+'.html';a.click()};
+$('#bToApk').onclick=()=>show('apk');
+
+/* ---------- GitHub / APK ---------- */
+function slug(n){let s=String(n||'').toLowerCase().replace(/[ʻʼ'‘’`]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');return s||'app'}
+async function gh(path,opt={}){
+  if(!S.ghToken)throw new Error('GitHub token kiritilmagan (⚙ Sozlamalar)');
+  const r=await fetch('https://api.github.com'+path,Object.assign({},opt,{headers:Object.assign({'Authorization':'Bearer '+S.ghToken,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'},opt.body?{'Content-Type':'application/json'}:{})}));
+  const t=await r.text();let j;try{j=JSON.parse(t)}catch(e){j=t}
+  if(!r.ok){const e=new Error((j&&j.message)||r.statusText);e.status=r.status;throw e}
+  return j;
+}
+const NATIVE_JAVA=String.raw`package __PACKAGE__;
+
+import android.Manifest;
+import android.app.DownloadManager;
+import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
+import android.util.Base64;
+import android.webkit.CookieManager;
+import android.webkit.DownloadListener;
+import android.webkit.JavascriptInterface;
+import android.webkit.MimeTypeMap;
+import android.webkit.URLUtil;
+import android.webkit.WebView;
+import android.widget.Toast;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import com.getcapacitor.BridgeActivity;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import org.json.JSONObject;
+
+public class MainActivity extends BridgeActivity {
+
+    private OutputStream dlOut;
+    private String dlName = "";
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        try {
+            if (Build.VERSION.SDK_INT < 29
+                    && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 4242);
+            }
+            final WebView wv = getBridge().getWebView();
+            wv.addJavascriptInterface(new DL(), "AndroidDL");
+            wv.setDownloadListener(new DownloadListener() {
+                @Override
+                public void onDownloadStart(String url, String ua, String cd, String mime, long len) {
+                    handleDownload(wv, url, ua, cd, mime);
+                }
+            });
+        } catch (Throwable t) {
+            // ilova ishlashda davom etadi
+        }
+    }
+
+    private void toast(final String msg) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(MainActivity.this, msg, Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private String readAsset(String n) throws Exception {
+        InputStream in = getAssets().open(n);
+        BufferedReader br = new BufferedReader(new InputStreamReader(in, "UTF-8"));
+        StringBuilder sb = new StringBuilder();
+        String line;
+        while ((line = br.readLine()) != null) {
+            sb.append(line).append('\n');
+        }
+        br.close();
+        return sb.toString();
+    }
+
+    private void handleDownload(WebView wv, String url, String ua, String cd, String mime) {
+        try {
+            if (url.startsWith("blob:") || url.startsWith("data:")) {
+                String js = readAsset("dl.js");
+                String call = "(" + js + ")(" + JSONObject.quote(url) + "," + JSONObject.quote("")
+                        + "," + JSONObject.quote(mime == null ? "" : mime) + ")";
+                wv.evaluateJavascript(call, null);
+            } else if (url.startsWith("http")) {
+                String name = URLUtil.guessFileName(url, cd, mime);
+                DownloadManager.Request r = new DownloadManager.Request(Uri.parse(url));
+                if (mime != null) {
+                    r.setMimeType(mime);
+                }
+                String ck = CookieManager.getInstance().getCookie(url);
+                if (ck != null) {
+                    r.addRequestHeader("cookie", ck);
+                }
+                if (ua != null) {
+                    r.addRequestHeader("User-Agent", ua);
+                }
+                r.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+                r.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, name);
+                DownloadManager dm = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+                dm.enqueue(r);
+                toast("Yuklanmoqda: " + name);
+            }
+        } catch (Throwable t) {
+            toast("Yuklash xatosi: " + t.getMessage());
+        }
+    }
+
+    private String cleanName(String name, String mime) {
+        String n = name == null ? "" : name.trim();
+        n = n.replaceAll("[^A-Za-z0-9._ -]", "_");
+        if (n.length() == 0) {
+            String ext = null;
+            if (mime != null && mime.length() > 0) {
+                ext = MimeTypeMap.getSingleton().getExtensionFromMimeType(mime);
+            }
+            n = "download_" + System.currentTimeMillis() + (ext != null ? "." + ext : "");
+        }
+        return n;
+    }
+
+    private File uniqueFile(File dir, String n) {
+        File f = new File(dir, n);
+        int i = 1;
+        while (f.exists()) {
+            int dot = n.lastIndexOf('.');
+            String base = dot > 0 ? n.substring(0, dot) : n;
+            String ext = dot > 0 ? n.substring(dot) : "";
+            f = new File(dir, base + " (" + i + ")" + ext);
+            i++;
+        }
+        return f;
+    }
+
+    private void closeQuiet() {
+        try {
+            if (dlOut != null) {
+                dlOut.close();
+            }
+        } catch (Throwable t) {
+            // e'tiborsiz
+        }
+        dlOut = null;
+    }
+
+    public class DL {
+
+        @JavascriptInterface
+        public boolean begin(String name, String mime) {
+            try {
+                closeQuiet();
+                String n = cleanName(name, mime);
+                dlName = n;
+                if (Build.VERSION.SDK_INT >= 29) {
+                    ContentValues cv = new ContentValues();
+                    cv.put(MediaStore.MediaColumns.DISPLAY_NAME, n);
+                    cv.put(MediaStore.MediaColumns.MIME_TYPE, mime);
+                    cv.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
+                    ContentResolver cr = getContentResolver();
+                    Uri uri = cr.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, cv);
+                    dlOut = cr.openOutputStream(uri);
+                } else {
+                    File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+                    dir.mkdirs();
+                    File f = uniqueFile(dir, n);
+                    dlName = f.getName();
+                    dlOut = new FileOutputStream(f);
+                }
+                return dlOut != null;
+            } catch (Throwable t) {
+                toast("Saqlash xatosi: " + t.getMessage());
+                return false;
+            }
+        }
+
+        @JavascriptInterface
+        public void write(String b64) {
+            try {
+                if (dlOut != null) {
+                    dlOut.write(Base64.decode(b64, Base64.DEFAULT));
+                }
+            } catch (Throwable t) {
+                closeQuiet();
+                toast("Yozish xatosi: " + t.getMessage());
+            }
+        }
+
+        @JavascriptInterface
+        public void end() {
+            try {
+                if (dlOut != null) {
+                    dlOut.flush();
+                    dlOut.close();
+                    dlOut = null;
+                    toast("Saqlandi: Yuklanmalar (Download) papkasi / " + dlName);
+                }
+            } catch (Throwable t) {
+                toast("Saqlash xatosi: " + t.getMessage());
+            }
+        }
+
+        @JavascriptInterface
+        public void fail(String msg) {
+            closeQuiet();
+            toast("Yuklash xatosi: " + msg);
+        }
+    }
+}
+`;
+const NATIVE_DL=String.raw`async function(u,n,m){
+  try{
+    var r=await fetch(u);
+    var b=await r.blob();
+    n=n||window.__apkDlName||'';
+    window.__apkDlName='';
+    var t=m||b.type||'application/octet-stream';
+    if(!AndroidDL.begin(n,t)){return}
+    var C=1572864;
+    for(var o=0;o<b.size;o+=C){
+      var s=await new Promise(function(ok,no){
+        var f=new FileReader();
+        f.onload=function(){var x=String(f.result);ok(x.substring(x.indexOf(',')+1))};
+        f.onerror=no;
+        f.readAsDataURL(b.slice(o,o+C));
+      });
+      AndroidDL.write(s);
+    }
+    AndroidDL.end();
+  }catch(e){try{AndroidDL.fail(String(e))}catch(_){}}
+}
+`;
+const NATIVE_PY=String.raw`import glob, json, os, re, shutil, sys
+
+A = 'android'
+GP = A + '/app/build.gradle'
+
+# ---------- zaxira holatiga qaytarish (agar native patch bilan yig'ilmasa) ----------
+if '--restore' in sys.argv:
+    try:
+        rel = open(A + '/.mainactivity_path').read().strip()
+        shutil.copy(A + '/MainActivity.java.orig', A + '/' + rel)
+        print('MainActivity tiklandi')
+    except Exception as e:
+        print('MainActivity tiklanmadi:', e)
+    try:
+        shutil.copy(A + '/build.gradle.orig', GP)
+        print('build.gradle tiklandi')
+    except Exception as e:
+        print('build.gradle tiklanmadi:', e)
+    sys.exit(0)
+
+cfg = {}
+try:
+    cfg = json.load(open('native/config.json', encoding='utf-8'))
+except Exception:
+    pass
+
+
+def on(k, d=True):
+    return bool(cfg.get(k, d))
+
+
+# ---------- AndroidManifest: ruxsatlar ----------
+mp = A + '/app/src/main/AndroidManifest.xml'
+m = open(mp, encoding='utf-8').read()
+want = [
+    ('INTERNET', ''), ('ACCESS_NETWORK_STATE', ''), ('WAKE_LOCK', ''), ('VIBRATE', ''),
+    ('READ_MEDIA_IMAGES', ''), ('READ_MEDIA_VIDEO', ''), ('READ_MEDIA_AUDIO', ''),
+    ('READ_EXTERNAL_STORAGE', ' android:maxSdkVersion="32"'),
+    ('WRITE_EXTERNAL_STORAGE', ' android:maxSdkVersion="28"'),
+    ('RECEIVE_BOOT_COMPLETED', ''),
+]
+if on('camera'):
+    want.append(('CAMERA', ''))
+if on('mic'):
+    want += [('RECORD_AUDIO', ''), ('MODIFY_AUDIO_SETTINGS', '')]
+if on('location'):
+    want += [('ACCESS_FINE_LOCATION', ''), ('ACCESS_COARSE_LOCATION', '')]
+if on('notif'):
+    want.append(('POST_NOTIFICATIONS', ''))
+add = ''
+for n, a in want:
+    if 'android.permission.' + n + '"' not in m:
+        add += '    <uses-permission android:name="android.permission.' + n + '"' + a + ' />\n'
+if on('camera') and 'android.hardware.camera' not in m:
+    add += '    <uses-feature android:name="android.hardware.camera" android:required="false" />\n'
+m = m.replace('</manifest>', add + '</manifest>')
+if 'requestLegacyExternalStorage' not in m:
+    m = m.replace('<application', '<application android:requestLegacyExternalStorage="true"', 1)
+if 'usesCleartextTraffic' not in m:
+    m = m.replace('<application', '<application android:usesCleartextTraffic="true"', 1)
+open(mp, 'w', encoding='utf-8').write(m)
+print('Manifest OK, ruxsatlar:', ', '.join(n for n, a in want))
+
+# ---------- build.gradle: doimiy imzo + versionCode ----------
+try:
+    g = open(GP, encoding='utf-8').read()
+    shutil.copy(GP, A + '/build.gradle.orig')
+    ks = os.path.abspath('signing/studio.keystore')
+    if os.path.exists(ks) and 'studioSign' not in g:
+        block = (
+            "\n    // studioSign\n    signingConfigs {\n        debug {\n"
+            "            storeFile file('" + ks + "')\n"
+            "            storePassword 'android'\n            keyAlias 'androiddebugkey'\n"
+            "            keyPassword 'android'\n        }\n    }\n"
+        )
+        g = re.sub(r'(\bandroid\s*\{)', lambda mm: mm.group(1) + block, g, count=1)
+        print('Doimiy imzo ulandi (yangilanganda ma\'lumot saqlanadi)')
+    run = os.environ.get('GITHUB_RUN_NUMBER')
+    if run and run.isdigit():
+        g = re.sub(r'versionCode\s+\d+', 'versionCode ' + run, g, count=1)
+        print('versionCode =', run)
+    open(GP, 'w', encoding='utf-8').write(g)
+except Exception as e:
+    print('build.gradle patch otkazib yuborildi:', e)
+
+# ---------- MainActivity: yuklash (blob/data/http) ----------
+found = glob.glob(A + '/app/src/main/java/**/MainActivity.java', recursive=True)
+if not found:
+    print('MainActivity.java topilmadi')
+    sys.exit(1)
+jp = found[0]
+src = open(jp, encoding='utf-8').read()
+pk = re.search(r'^package\s+([\w.]+)\s*;', src, re.M).group(1)
+shutil.copy(jp, A + '/MainActivity.java.orig')
+open(A + '/.mainactivity_path', 'w').write(os.path.relpath(jp, A))
+tpl = open('native/MainActivity.java.tpl', encoding='utf-8').read().replace('__PACKAGE__', pk)
+open(jp, 'w', encoding='utf-8').write(tpl)
+os.makedirs(A + '/app/src/main/assets', exist_ok=True)
+shutil.copy('native/dl.js', A + '/app/src/main/assets/dl.js')
+print('MainActivity OK, paket:', pk)
+`;
+const HELPER_JS=String.raw`(function(){
+  var W=window;
+  if(W.__apkHelper)return;
+  W.__apkHelper=1;
+  function native(){var c=W.Capacitor;return !!(c&&c.isNativePlatform&&c.isNativePlatform())}
+  function P(n){try{return W.Capacitor.registerPlugin(n)}catch(e){return null}}
+  var isWV=/; wv\)/.test(navigator.userAgent)||native();
+
+  /* 1) Yuklash fayl nomini eslab qolish */
+  var oc=HTMLAnchorElement.prototype.click;
+  HTMLAnchorElement.prototype.click=function(){
+    try{if(this.hasAttribute("download"))W.__apkDlName=this.getAttribute("download")}catch(e){}
+    return oc.apply(this,arguments)
+  };
+  document.addEventListener("click",function(e){
+    try{var a=e.target&&e.target.closest&&e.target.closest("a[download]");if(a)W.__apkDlName=a.getAttribute("download")}catch(x){}
+  },true);
+
+  var APK=W.APK=W.APK||{};
+  APK.isApp=function(){return native()};
+
+  /* 2) Bildirishnoma */
+  var nseq=1;
+  APK.notify=async function(title,body,delaySec){
+    try{
+      var LN=P("LocalNotifications");
+      if(!native()||!LN)return false;
+      var p=await LN.checkPermissions();
+      if(p.display!=="granted")p=await LN.requestPermissions();
+      if(p.display!=="granted")return false;
+      var at=new Date(Date.now()+Math.max(0,(delaySec||0))*1000+300);
+      await LN.schedule({notifications:[{id:(Date.now()+nseq++)%2147483000,title:String(title||""),body:String(body||""),schedule:{at:at}}]});
+      return true
+    }catch(e){return false}
+  };
+  if(isWV){
+    var N=function(t,o){APK.notify(t,(o&&o.body)||"")};
+    N.permission="granted";
+    N.requestPermission=function(cb){if(cb)cb("granted");return Promise.resolve("granted")};
+    try{W.Notification=N}catch(e){}
+  }
+
+  /* 3) Faylni telefon xotirasiga (Yuklanmalar) saqlash */
+  APK.save=function(name,data,mime){
+    var b=(typeof Blob!=="undefined"&&data instanceof Blob)?data:new Blob([data],{type:mime||"application/octet-stream"});
+    var u=URL.createObjectURL(b),a=document.createElement("a");
+    a.href=u;a.download=name||"file";document.body.appendChild(a);a.click();
+    setTimeout(function(){a.remove();URL.revokeObjectURL(u)},60000)
+  };
+
+  /* 4) Ma'lumotni ilovaning o'z papkasiga (apk_data/) zaxiralash va tiklash */
+  var last="";
+  APK.backupNow=async function(){
+    try{
+      var FS=P("Filesystem");
+      if(!native()||!FS)return false;
+      var d={};
+      for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);d[k]=localStorage.getItem(k)}
+      var s=JSON.stringify(d);
+      if(s===last)return true;
+      await FS.writeFile({path:"apk_data/localstorage.json",data:s,directory:"DATA",encoding:"utf8",recursive:true});
+      last=s;return true
+    }catch(e){return false}
+  };
+  (async function(){
+    try{
+      if(!native())return;
+      var FS=P("Filesystem");
+      if(!FS)return;
+      if(localStorage.length===0){
+        var r=await FS.readFile({path:"apk_data/localstorage.json",directory:"DATA",encoding:"utf8"});
+        var d=JSON.parse(r.data),n=0;
+        for(var k in d){localStorage.setItem(k,d[k]);n++}
+        if(n){location.reload();return}
+      }
+      setInterval(APK.backupNow,15000);
+      document.addEventListener("visibilitychange",function(){if(document.hidden)APK.backupNow()});
+      W.addEventListener("pagehide",function(){APK.backupNow()})
+    }catch(e){
+      try{setInterval(APK.backupNow,15000)}catch(_){}
+    }
+  })();
+})();
+`;
+const HOOK='<script>'+HELPER_JS+'<\/script>';
+function withHook(h){return h.indexOf('__apkHelper')>=0?h:inject(h,HOOK)}
+function workflow(sl,hm){return[
+'name: Build APK','on:','  push:','    branches: [main, master]','  workflow_dispatch:','permissions:','  contents: write','jobs:','  build:','    runs-on: ubuntu-latest','    steps:',
+'      - uses: actions/checkout@v4',
+'      - uses: actions/setup-node@v4','        with:','          node-version: 20',
+'      - uses: actions/setup-java@v4','        with:','          distribution: temurin','          java-version: 17',
+'      - name: Install','        run: npm install',
+'      - name: Add Android','        run: npx cap add android',
+'      - name: Icons','        run: npx @capacitor/assets generate --android',
+...(hm?['      - name: Launcher',`        run: sed -i 's#<category android:name="android.intent.category.LAUNCHER" />#&<category android:name="android.intent.category.HOME" /><category android:name="android.intent.category.DEFAULT" />#' android/app/src/main/AndroidManifest.xml`]:[]),
+'      - name: Signing key','        run: |','          mkdir -p signing','          if [ ! -f signing/studio.keystore ]; then','            keytool -genkeypair -keystore signing/studio.keystore -storepass android -keypass android -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 36500 -dname "CN=APK Studio,O=APK Studio,C=UZ"','            echo "NEWKEY=1" >> $GITHUB_ENV','          fi',
+'      - name: Native patch','        run: |','          python3 scripts/patch_android.py || echo "::warning::native patch otkazib yuborildi"',
+'      - name: Sync','        run: npx cap sync android',
+'      - name: Build APK','        run: |','          cd android','          chmod +x gradlew','          if ! ./gradlew assembleDebug --no-daemon; then','            echo "::warning::Native patch bilan yigilmadi, oddiy variant sinab koriladi"','            cd .. && python3 scripts/patch_android.py --restore && cd android','            ./gradlew assembleDebug --no-daemon','          fi',
+'      - name: Save key','        run: |','          if [ -n "$NEWKEY" ]; then','            git config user.name "APK Studio"','            git config user.email "studio@users.noreply.github.com"','            git add signing/studio.keystore','            git commit -m "APK Studio: imzo kaliti" || true','            git push || true','          fi',
+'      - name: Release','        env:','          GH_TOKEN: ${{ github.token }}','        run: |',
+'          cp android/app/build/outputs/apk/debug/app-debug.apk "'+sl+'.apk"',
+'          gh release create "v${{ github.run_number }}" "'+sl+'.apk" --title "'+sl+' v${{ github.run_number }}" --notes "APK Studio bilan yaratildi"'
+].join('\n')+'\n'}
+function files(sl,name){
+  let id=sl.replace(/[^a-z0-9]/g,'');if(!id||/^[0-9]/.test(id))id='a'+id;
+  return[
+   {path:'package.json',content:JSON.stringify({name:'apk-'+sl,version:'1.0.0',private:true,devDependencies:{'@capacitor/assets':'^3.0.5'},dependencies:{'@capacitor/core':'^6.0.0','@capacitor/cli':'^6.0.0','@capacitor/android':'^6.0.0','@capacitor/filesystem':'^6.0.0','@capacitor/share':'^6.0.0','@capacitor/local-notifications':'^6.0.0'}},null,2)+'\n'},
+   {path:'capacitor.config.json',content:JSON.stringify({appId:'app.studio.'+id,appName:name,webDir:'www'},null,2)+'\n'},
+   {path:'www/index.html',content:withHook(lintHtml(S.html).html)},
+   {path:'scripts/patch_android.py',content:NATIVE_PY},
+   {path:'native/MainActivity.java.tpl',content:NATIVE_JAVA},
+   {path:'native/dl.js',content:NATIVE_DL},
+   {path:'native/config.json',content:JSON.stringify({camera:S.perm.cam,mic:S.perm.mic,location:S.perm.loc,notif:S.perm.notif})+'\n'},
+   {path:'.gitignore',content:'node_modules/\nandroid/\n'},
+   {path:'README.md',content:'# '+name+'\n\nAPK Studio yordamida yaratilgan. Har bir push APK yig\'ilishini boshlaydi (Actions → Releases).\n'},
+   {path:'.github/workflows/build.yml',content:workflow(sl,S.kind==='launcher')}];
+}
+const L=(m,c)=>{const l=$('#log');if(l.classList.contains('mu')&&l.textContent==='Jurnal bo\'sh'){l.textContent='';l.classList.remove('mu')}
+  const d=document.createElement('div');if(c)d.className=c;d.innerHTML=m;l.appendChild(d);l.scrollTop=l.scrollHeight;return d};
+let building=false;
+async function doBuild(){
+  if(building)return;
+  if(!S.html)return toast('Avval ilova yarating');
+  if(!S.ghToken){toast('Avval GitHub token kiriting');return show('guide')}
+  building=true;$('#bBuild').disabled=true;$('#res').innerHTML='';$('#log').textContent='';$('#log').classList.remove('mu');
+  try{
+    const name=S.name||'Mening ilovam',sl=slug(name),repo='apk-'+sl;
+    L('🔑 GitHub\'ga ulanmoqda...');const u=await gh('/user');const me=u.login;L('✅ Akkaunt: '+esc(me),'ok');
+    let exists=true;try{await gh('/repos/'+me+'/'+repo)}catch(e){if(e.status===404)exists=false;else throw e}
+    if(!exists){L('📁 Repository ochilmoqda: '+esc(repo));
+      await gh('/user/repos',{method:'POST',body:JSON.stringify({name:repo,private:S.priv,auto_init:true,description:name+' — APK Studio'})});await sleep(3000)}
+    else L('📁 Repository mavjud, yangilanadi: '+esc(repo),'mu');
+    const base='/repos/'+me+'/'+repo;
+    const info=await gh(base);const br=info.default_branch;
+    let ref;for(let i=0;i<6;i++){try{ref=await gh(base+'/git/ref/heads/'+br);break}catch(e){if(i===5)throw e;await sleep(2000)}}
+    const parent=ref.object.sha;const pc=await gh(base+'/git/commits/'+parent);
+    {const lr=lintHtml(S.html);lr.fixes.forEach(x=>L('🔧 '+esc(x),'ok'));lr.notes.forEach(x=>L('ℹ️ '+esc(x),'mu'));lr.warns.forEach(x=>L('⚠️ '+esc(x),'wa'))}
+    L('⬆️ Fayllar yuklanmoqda...');
+    const extra=[];for(const f of (S.extra||[])){const b=await gh(base+'/git/blobs',{method:'POST',body:JSON.stringify({content:f.b64,encoding:'base64'})});extra.push({path:'www/'+f.path,mode:'100644',type:'blob',sha:b.sha})}
+    L('🎨 Ikonka yaratilmoqda...');const ic=await makeIcons(name,S.prompt||'');
+    for(const k in ic){const b=await gh(base+'/git/blobs',{method:'POST',body:JSON.stringify({content:ic[k],encoding:'base64'})});extra.push({path:'assets/'+k,mode:'100644',type:'blob',sha:b.sha})}
+    L('<img src="data:image/png;base64,'+ic['icon-only.png']+'" width="72" style="border-radius:18px">');
+    const tree=await gh(base+'/git/trees',{method:'POST',body:JSON.stringify({base_tree:pc.tree.sha,tree:files(sl,name).map(f=>({path:f.path,mode:'100644',type:'blob',content:f.content})).concat(extra)})});
+    const nc=await gh(base+'/git/commits',{method:'POST',body:JSON.stringify({message:'APK Studio: '+new Date().toISOString(),tree:tree.sha,parents:[parent]})});
+    try{await gh(base+'/git/refs/heads/'+br,{method:'PATCH',body:JSON.stringify({sha:nc.sha})})}
+    catch(e){if(/workflow/i.test(e.message))throw new Error('Tokenda «workflow» ruxsati yo\'q. Yo\'riqnoma bo\'limidagi tugma orqali qayta yarating.');throw e}
+    L('✅ Yuklandi','ok');L('⚙️ GitHub APK yig\'ishni boshladi (3–6 daqiqa)...');
+    let run=null,live=L('','mu');
+    for(let i=0;i<200;i++){
+      await sleep(5000);
+      const rs=await gh(base+'/actions/runs?head_sha='+nc.sha);run=rs.workflow_runs&&rs.workflow_runs[0];
+      if(!run){live.textContent='⏳ Navbatda kutilmoqda...';continue}
+      let step='';try{const jb=await gh(base+'/actions/runs/'+run.id+'/jobs');const st=jb.jobs[0]&&jb.jobs[0].steps||[];const c=st.find(s=>s.status==='in_progress');if(c)step=c.name;}catch(e){}
+      live.textContent='⏳ '+(run.status==='completed'?'yakunlandi':'ishlayapti')+(step?' — '+step:'')+' ('+(i*5)+' s)';
+      if(run.status==='completed')break;
+    }
+    if(!run||run.status!=='completed')throw new Error('Vaqt tugadi. GitHub → Actions bo\'limini tekshiring: https://github.com/'+me+'/'+repo+'/actions');
+    if(run.conclusion!=='success'){L('❌ Yig\'ish muvaffaqiyatsiz: '+esc(run.conclusion),'er');
+      $('#res').innerHTML='<a class="b s" target="_blank" rel="noopener" href="'+run.html_url+'">Xato jurnalini ko\'rish</a>';
+      L('Ilova kodida muammo bo\'lsa, jurnal matnini AI\'ga «O\'zgartirish» orqali yuboring.','wa');return}
+    L('✅ APK yig\'ildi','ok');
+    let rel=null;for(let i=0;i<8&&!rel;i++){try{rel=await gh(base+'/releases/tags/v'+run.run_number)}catch(e){await sleep(2500)}}
+    const a=rel&&rel.assets&&rel.assets[0];
+    if(a){$('#res').innerHTML='<a class="b" href="'+a.browser_download_url+'">⬇️ APK yuklab olish ('+esc(a.name)+', '+(a.size/1048576).toFixed(1)+' MB)</a>'
+      +'<a class="b s" target="_blank" rel="noopener" href="'+rel.html_url+'">Release sahifasi</a>'
+      +(S.priv?'<div class="hint" style="margin-top:8px">Repo yopiq: havola GitHub\'ga kirgan brauzerda ochiladi.</div>':'')
+      +'<div class="hint" style="margin-top:8px">Yuklangach faylni oching → «noma\'lum manba» ruxsatini bering → O\'rnatish.</div>'}
+    else $('#res').innerHTML='<a class="b" target="_blank" rel="noopener" href="https://github.com/'+me+'/'+repo+'/releases">Releases sahifasini ochish</a>';
+  }catch(e){L('❌ '+esc(e.message),'er')}
+  finally{building=false;$('#bBuild').disabled=false}
+}
+$('#bBuild').onclick=doBuild;
+
+$('#bUp').onclick=()=>$('#fUp').click();
+$('#fUp').onchange=async e=>{
+  const fs=[...e.target.files];if(!fs.length)return;
+  const main=fs.find(f=>/^index\.html?$/i.test(f.name))||fs.find(f=>/\.html?$/i.test(f.name));
+  if(!main){toast('HTML fayl topilmadi');return}
+  const rd=(f,t)=>new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok(r.result);r.onerror=()=>no(r.error);t?r.readAsText(f):r.readAsDataURL(f)});
+  try{
+    S.html=await rd(main,true);S.extra=[];
+    for(const f of fs){if(f===main)continue;const d=await rd(f,false);S.extra.push({path:f.name,b64:String(d).split(',')[1]||''})}
+    S.name=$('#name').value.trim()||main.name.replace(/\.[^.]+$/,'');$('#name').value=S.name;
+    S.cur=Date.now();S.projects.unshift({id:S.cur,name:S.name,html:S.html,t:S.cur});S.projects=S.projects.slice(0,15);save();renderProjs();
+    toast('Yuklandi'+(S.extra.length?' (+'+S.extra.length+' qo\'shimcha fayl)':''));show('prev');
+  }catch(er){toast('Faylni o\'qib bo\'lmadi')}
+  e.target.value='';
+};
+$('#bAuto').onclick=()=>autoChain(false);
+$('#bModels').onclick=async()=>{
+  const st=$('#mst');st.textContent='Yuklanmoqda...';
+  try{let ids=[];
+    if(S.provider==='gemini'){
+      if(!S.aiKey)throw new Error('Avval Gemini kalitini kiriting');
+      const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=200',{headers:{'x-goog-api-key':S.aiKey}});
+      const j=await r.json();if(!r.ok)throw new Error((j.error&&j.error.message)||('Xato '+r.status));
+      ids=(j.models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes('generateContent')).map(m=>m.name.replace('models/','')).filter(n=>/gemini/.test(n));
+    }else if(S.provider==='anthropic'){
+      if(!S.aiKey)throw new Error('Avval Anthropic kalitini kiriting');
+      const r=await fetch('https://api.anthropic.com/v1/models?limit=100',{headers:{'x-api-key':S.aiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'}});
+      const j=await r.json();if(!r.ok)throw new Error((j.error&&j.error.message)||('Xato '+r.status));
+      ids=(j.data||[]).map(m=>m.id);
+    }else{
+      const r=await fetch('https://openrouter.ai/api/v1/models');const j=await r.json();
+      ids=(j.data||[]).map(m=>m.id);
+    }
+    ids.sort();$('#mlist').innerHTML=ids.map(i=>'<option value="'+esc(i)+'">').join('');
+    st.innerHTML='<span class="ok">✅ '+ids.length+' ta model.</span> Model maydonini bosing va tanlang (OpenRouter\'da «free» deb yozsangiz bepullari chiqadi).';
+  }catch(e){st.innerHTML='<span class="er">❌ '+esc(e.message)+'</span>'}};
+$('#prompt').addEventListener('input',()=>{S.prompt=$('#prompt').value;save()});
+$('#name').addEventListener('input',()=>{S.name=$('#name').value;save()});
+$('#kind').value=S.kind||'app';$('#kind').onchange=()=>{S.kind=$('#kind').value;save()};
+$('#eco').checked=S.economy;$('#aiic').checked=S.aiIcon;
+$('#eco').onchange=()=>{S.economy=$('#eco').checked;save()};$('#aiic').onchange=()=>{S.aiIcon=$('#aiic').checked;save()};
+$('#bPool').onclick=()=>buildPool();
+function newWork(){
+  if(typeof building!=='undefined'&&building)return toast("APK yig'ilmoqda, tugashini kuting");
+  if(typeof busy!=='undefined'&&busy)return toast('AI ishlayapti, tugashini kuting');
+  S.html='';S.name='';S.prompt='';S.extra=[];S.cur=null;S.lastRes=null;
+  $('#name').value='';$('#prompt').value='';$('#gstat').textContent='';
+  const c=$('#code');if(c)c.value='';
+  const fr=$('#fr');if(fr){fr.srcdoc='';fr.removeAttribute('src')}
+  const l=$('#log');l.textContent="Jurnal bo'sh";l.className='mu';
+  $('#res').innerHTML='';$('#fUp').value='';
+  const pb=$('#prevbox'),np=$('#noprev');if(pb)pb.style.display='none';if(np)np.style.display='block';
+  save();show('gen');toast('Tozalandi. Yangi ish boshlashingiz mumkin');
+}
+[['pCam','cam'],['pMic','mic'],['pLoc','loc'],['pNot','notif']].forEach(function(x){var e=$('#'+x[0]);e.checked=!!S.perm[x[1]];e.onchange=function(){S.perm[x[1]]=e.checked;save()}});
+
+/* ---------- Tekshiruv, avto-tuzatish, to'liq avtomatik ---------- */
+function lintHtml(h){
+  const fixes=[],notes=[],warns=[];let o=String(h||"");
+  if(!/<meta[^>]+charset/i.test(o)){o=inject(o,'<meta charset="utf-8">');fixes.push("Belgilar kodlashi (charset) qo'shildi")}
+  if(!/<meta[^>]+name=["']?viewport/i.test(o)){o=inject(o,'<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">');fixes.push("Telefon ekraniga moslash (viewport) qo'shildi")}
+  if(/Notification\s*\(|Notification\.requestPermission/.test(o))notes.push("Bildirishnoma kodi topildi: APK ichida telefon bildirishnomasi bo'lib ishlaydi");
+  if(/createObjectURL|\.download\s*=|\bdownload=/.test(o))notes.push("Fayl yuklash topildi: fayl telefonning Yuklanmalar papkasiga saqlanadi");
+  if(/localStorage|indexedDB/.test(o))notes.push("Ma'lumot saqlash topildi: ilova xotirasida saqlanadi, nusxasi apk_data papkasida turadi");
+  if(/getUserMedia/.test(o))notes.push("Kamera/mikrofon ishlatiladi: Sozlamalarda ruxsat yoqilganini tekshiring");
+  if(/geolocation/.test(o))notes.push("Joylashuv ishlatiladi: Sozlamalarda ruxsat yoqilganini tekshiring");
+  if(/serviceWorker/.test(o))warns.push("Service Worker APK ichida ishlamaydi (kerak ham emas)");
+  if(/<script[^>]+src=["']https?:/i.test(o))warns.push("Tashqi kutubxona (CDN) bor: internet bo'lmasa ilova ishlamaydi. Oflayn kerak bo'lsa kutubxonani fayl ichiga joylang");
+  if(/(?:src|href)=["']http:\/\//i.test(o))warns.push("http:// havola bor (xavfsiz emas, lekin ishlaydi)");
+  if(o.length>1500000)warns.push("HTML hajmi katta ("+(o.length/1048576).toFixed(1)+" MB): ilova sekin ochilishi mumkin");
+  return{html:o,fixes,notes,warns};
+}
+function renderLint(){
+  const b=$("#lintbox");if(!b)return;
+  if(!S.html){b.style.display="none";return}
+  const r=lintHtml(S.html);
+  const li=(a,c,i)=>a.map(x=>'<div class="'+c+'">'+i+" "+esc(x)+"</div>").join("");
+  b.style.display="block";
+  b.innerHTML="<h3>🔍 Tekshiruv hisoboti</h3>"+(li(r.fixes,"ok","🔧 Avto-tuzatiladi:")+li(r.notes,"mu","ℹ️")+li(r.warns,"wa","⚠️")||'<div class="ok">✅ Hammasi joyida</div>')
+    +'<div class="hint" style="margin-top:6px">Avtomatik qo\'shiladi: fayl yuklash, bildirishnoma, xotiraga kirish, ma\'lumot zaxirasi, doimiy imzo (yangilaganda ma\'lumot yo\'qolmaydi). Imzo kaliti repoda turadi, shuning uchun ⚙ Sozlamalarda «Repository yopiq» ni yoqing.</div>';
+}
+async function checkFix(){
+  if(!S.html)return toast("Avval ilova yarating yoki HTML yuklang");
+  if(busy||building)return toast("Boshqa ish davom etmoqda");
+  busy=true;const st=$("#cstat");
+  try{
+    st.innerHTML='<span class="spin"></span>Sinalmoqda...';
+    let out=S.html,errs=await testHtml(out),n=0;
+    const canAI=Object.values(S.keys).some(Boolean);
+    if(errs.length&&canAI&&!S.pool.length){st.innerHTML='<span class="spin"></span>Agent havzasi yig\'ilmoqda...';await buildPool();if(!S.pool.length&&!S.chain.trim())await autoChain(true)}
+    while(errs.length&&canAI&&n<2){
+      st.innerHTML='<span class="spin"></span>AI xatolarni tuzatmoqda ('+(n+1)+'/2)...';
+      const fx=extractHtml(await callAI("Quyidagi kod ishga tushganda xatolar chiqdi.\n\nKOD:\n"+out+"\n\nXATOLAR:\n"+errs.join("\n")+"\n\nBarcha xatolarni tuzat. To'liq kodni qaytar (faqat HTML).",null,n?"strong":"fix"));
+      if(!/<html|<!doctype/i.test(fx))break;
+      out=fx;n++;errs=await testHtml(out);
+    }
+    if(out!==S.html){S.html=out;const pr=S.projects.find(x=>x.id===S.cur);if(pr)pr.html=out;save();renderPrev()}
+    const lr=lintHtml(S.html);
+    st.innerHTML=(errs.length?'<span class="wa">⚠️ '+errs.length+' ta xato qoldi:</span><div class="mu">'+errs.map(esc).join("<br>")+"</div>"+(canAI?"":'<div class="wa">AI kalit yo\'q, avto-tuzatib bo\'lmadi.</div>'):'<span class="ok">✅ Sinovda xato topilmadi'+(n?" ("+n+" marta avto-tuzatildi)":"")+"</span>")
+      +(lr.fixes.length?'<div class="ok">🔧 APK yasalganda avtomatik: '+lr.fixes.map(esc).join("; ")+"</div>":"")
+      +lr.warns.map(w=>'<div class="wa">⚠️ '+esc(w)+"</div>").join("");
+  }catch(e){st.innerHTML='<span class="er">❌ '+esc(e.message)+"</span>"}
+  finally{busy=false}
+}
+async function autoAll(){
+  if(busy||building)return toast("Boshqa ish davom etmoqda");
+  if(!$("#name").value.trim()||!$("#prompt").value.trim())return toast("Ilova nomi va tavsifini yozing");
+  if(!Object.values(S.keys).some(Boolean)){toast("Avval AI kalitni kiriting");return show("set")}
+  if(!S.ghToken){toast("Avval GitHub token kiriting");return show("guide")}
+  $("#bAuto2").disabled=true;
+  try{
+    const ok=await gen("new",{stay:true});
+    if(!ok)return;
+    show("apk");
+    await doBuild();
+  }finally{$("#bAuto2").disabled=false}
+}
+$("#bAuto2").onclick=autoAll;$("#bFix").onclick=checkFix;
+[['resrch','research'],['revw','review']].forEach(function(x){var e=$('#'+x[0]);e.checked=!!S[x[1]];e.onchange=function(){S[x[1]]=e.checked;save()}});
+$('#bClear').onclick=newWork;$('#bClearH').onclick=newWork;
+loadSet();renderProjs();show(S.tab||'gen');
+</script>
+</body>
+</html>

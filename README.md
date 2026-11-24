@@ -1,2 +1,3 @@
-# apk-apk-studio-yang3i
-apk-studio-yang3i — APK Studio
+# apk-studio-yang3i
+
+APK Studio yordamida yaratilgan. Har bir push APK yig'ilishini boshlaydi (Actions → Releases).
